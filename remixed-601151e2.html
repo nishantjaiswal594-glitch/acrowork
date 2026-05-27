@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DukaanScore — Your Business, Your Credit</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #F97316; --orange-dark: #EA580C; --green: #16A34A; --green-light: #22C55E;
+  --blue: #1D4ED8; --navy: #0F172A; --cream: #FFFBF5; --white: #FFFFFF;
+  --gold: #F59E0B; --red: #EF4444; --gray: #6B7280; --gray-light: #F3F4F6;
+  --radius: 16px; --shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans', sans-serif; background: var(--cream); color: var(--navy); min-height: 100vh; overflow-x: hidden; }
+
+#splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(160deg, #0F172A 0%, #1e293b 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.7s ease;
+}
+#splash.hide { opacity: 0; pointer-events: none; }
+.splash-emoji { font-size: 3.5rem; margin-bottom: 16px; animation: bob 1.4s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.splash-logo { font-family: 'Baloo 2', cursive; font-size: 2.8rem; font-weight: 800; color: #fff; }
+.splash-logo span { color: var(--gold); }
+.splash-tag { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-top: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+.splash-bar { width: 140px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 10px; margin-top: 36px; overflow: hidden; }
+.splash-fill { height: 100%; background: var(--orange); border-radius: 10px; animation: loadbar 2.2s ease forwards; }
+@keyframes loadbar { from{width:0} to{width:100%} }
+
+nav {
+  background: var(--navy); display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.nav-logo { font-family: 'Baloo 2', cursive; font-size: 1.35rem; font-weight: 800; color: #fff; }
+.nav-logo span { color: var(--gold); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-notif {
+  width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer; border: none; color: #fff; position: relative;
+}
+.notif-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; background: var(--orange); border-radius: 50%; border: 1.5px solid var(--navy); }
+.nav-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: #fff; cursor: pointer;
+}
+
+.tab-bar {
+  display: flex; background: var(--white); border-bottom: 2px solid #E5E7EB;
+  overflow-x: auto; scrollbar-width: none; position: sticky; top: 60px; z-index: 99;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab {
+  flex: none; padding: 11px 16px; font-family: 'Baloo 2', cursive; font-size: 0.85rem; font-weight: 600;
+  color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent;
+  white-space: nowrap; border: none; background: none; transition: color 0.2s, border-color 0.2s;
+}
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.tab span { margin-right: 5px; }
+
+.page { display: none; padding: 16px 16px 90px; animation: fadein 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; background: var(--white);
+  border-top: 1.5px solid #E5E7EB; display: flex; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 0 8px; cursor: pointer; border: none; background: none;
+  color: var(--gray); font-size: 0.65rem; font-family: 'Noto Sans', sans-serif; transition: color 0.2s;
+}
+.bnav-item .icon { font-size: 1.3rem; margin-bottom: 2px; }
+.bnav-item.active { color: var(--orange); }
+.bnav-fab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; cursor: pointer; border: none; background: none; }
+.fab-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #fff; box-shadow: 0 4px 16px rgba(249,115,22,0.45);
+  margin-top: -22px; border: 3px solid var(--cream); transition: transform 0.2s;
+}
+.fab-btn:hover { transform: scale(1.08); }
+.fab-label { font-size: 0.65rem; color: var(--orange); font-weight: 600; margin-top: 1px; }
+
+.card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px; }
+.section-title { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+
+.hero-card {
+  background: linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden;
+}
+.hero-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 150px; height: 150px; border-radius: 50%; background: rgba(249,115,22,0.15); }
+.hero-card::after { content: ''; position: absolute; bottom: -20px; right: 40px; width: 80px; height: 80px; border-radius: 50%; background: rgba(245,158,11,0.1); }
+.hero-greeting { color: rgba(255,255,255,0.65); font-size: 0.82rem; margin-bottom: 2px; }
+.hero-name { color: #fff; font-family: 'Baloo 2', cursive; font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+.score-row { display: flex; align-items: center; gap: 16px; }
+.score-ring { width: 76px; height: 76px; border-radius: 50%; background: conic-gradient(#22C55E 0% 65%, rgba(255,255,255,0.1) 65% 100%); display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+.score-ring-inner { width: 58px; height: 58px; border-radius: 50%; background: #1e3a5f; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.score-num { font-family: 'Baloo 2', cursive; font-size: 1.3rem; font-weight: 800; color: #fff; line-height: 1; }
+.score-max { font-size: 0.6rem; color: rgba(255,255,255,0.5); }
+.score-info { flex: 1; }
+.score-label { color: rgba(255,255,255,0.6); font-size: 0.75rem; }
+.score-status { font-family: 'Baloo 2', cursive; color: var(--green-light); font-size: 1rem; font-weight: 700; }
+.score-tip { color: rgba(255,255,255,0.5); font-size: 0.72rem; margin-top: 4px; line-height: 1.4; }
+.loan-eligibility { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+.loan-elig-label { color: rgba(255,255,255,0.6); font-size: 0.75rem; }
+.loan-elig-amount { font-family: 'Baloo 2', cursive; color: var(--gold); font-size: 1.2rem; font-weight: 800; }
+.loan-elig-btn { background: var(--orange); color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Baloo 2', cursive; }
+.loan-elig-btn:hover { background: var(--orange-dark); }
+
+.quick-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-card { background: var(--white); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.stat-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.stat-val { font-family: 'Baloo 2', cursive; font-size: 1.25rem; font-weight: 800; color: var(--navy); }
+.stat-lbl { font-size: 0.72rem; color: var(--gray); margin-top: 2px; }
+.stat-change { font-size: 0.7rem; margin-top: 4px; }
+.up { color: var(--green); } .down { color: var(--red); }
+
+.action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.action-btn { background: var(--white); border-radius: 12px; padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: var(--shadow); cursor: pointer; border: none; transition: transform 0.15s; }
+.action-btn:hover { transform: translateY(-2px); }
+.action-btn .a-icon { font-size: 1.5rem; }
+.action-btn .a-label { font-size: 0.62rem; color: var(--gray); font-weight: 600; text-align: center; line-height: 1.2; }
+
+.txn-list { display: flex; flex-direction: column; gap: 8px; }
+.txn-item { display: flex; align-items: center; gap: 12px; background: var(--white); border-radius: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.txn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.txn-icon.income { background: #DCFCE7; } .txn-icon.expense { background: #FEE2E2; } .txn-icon.loan { background: #DBEAFE; }
+.txn-info { flex: 1; }
+.txn-name { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+.txn-time { font-size: 0.7rem; color: var(--gray); margin-top: 1px; }
+.txn-amount { font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; }
+.txn-amount.income { color: var(--green); } .txn-amount.expense { color: var(--red); } .txn-amount.loan { color: var(--blue); }
+
+/* LEDGER */
+.ledger-header { background: linear-gradient(135deg, var(--green) 0%, #15803d 100%); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; color: #fff; }
+.ledger-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+.ledger-month { font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 700; }
+.ledger-toggle { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
+.ledger-totals { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ledger-tot { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; text-align: center; }
+.ledger-tot-val { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; }
+.ledger-tot-lbl { font-size: 0.65rem; opacity: 0.75; margin-top: 2px; }
+.add-entry-btn { width: 100%; background: var(--orange); color: #fff; border: none; padding: 13px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 16px rgba(249,115,22,0.35); }
+.ledger-day { margin-bottom: 14px; }
+.day-label { font-size: 0.75rem; color: var(--gray); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ledger-row { background: var(--white); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 6px; }
+.ledger-cat { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.cat-sales { background: #DCFCE7; } .cat-expense { background: #FEE2E2; } .cat-other { background: #FEF9C3; }
+.ledger-desc { flex: 1; }
+.ledger-desc-name { font-size: 0.85rem; font-weight: 600; }
+.ledger-desc-sub { font-size: 0.7rem; color: var(--gray); margin-top: 1px; }
+.ledger-amt { font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; }
+.ledger-amt.in { color: var(--green); } .ledger-amt.out { color: var(--red); }
+
+/* LOANS */
+.loan-hero { background: linear-gradient(135deg, #1D4ED8 0%, #1e40af 100%); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; color: #fff; }
+.loan-hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.loan-hero-title { font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 700; }
+.live-badge { background: var(--green-light); color: var(--navy); font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+.live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.loan-amount-big { font-family: 'Baloo 2', cursive; font-size: 2.2rem; font-weight: 800; }
+.loan-amount-sub { color: rgba(255,255,255,0.6); font-size: 0.78rem; margin-top: 2px; margin-bottom: 16px; }
+.loan-bar-bg { height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; }
+.loan-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #fbbf24); border-radius: 10px; width: 65%; }
+.loan-bar-labels { display: flex; justify-content: space-between; margin-top: 5px; }
+.loan-bar-labels span { font-size: 0.68rem; color: rgba(255,255,255,0.55); }
+.loan-cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.loan-mini-card { background: var(--white); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); border-left: 4px solid transparent; }
+.loan-mini-card.active-loan { border-left-color: var(--blue); } .loan-mini-card.completed { border-left-color: var(--green); }
+.loan-mini-title { font-size: 0.72rem; color: var(--gray); margin-bottom: 4px; }
+.loan-mini-val { font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; color: var(--navy); }
+.loan-mini-sub { font-size: 0.7rem; color: var(--gray); margin-top: 2px; }
+.loan-mini-status { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; margin-top: 6px; }
+.status-active { background: #DBEAFE; color: var(--blue); } .status-done { background: #DCFCE7; color: var(--green); }
+.apply-loan-btn { width: 100%; background: linear-gradient(135deg, var(--blue), #1e40af); color: #fff; border: none; padding: 14px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(29,78,216,0.3); }
+.emi-timeline { display: flex; flex-direction: column; gap: 6px; }
+.emi-row { background: var(--white); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.emi-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; flex-shrink: 0; }
+.emi-paid { background: #DCFCE7; color: var(--green); } .emi-due { background: #FEF9C3; color: #92400e; } .emi-upcoming { background: var(--gray-light); color: var(--gray); }
+.emi-info { flex: 1; }
+.emi-date { font-size: 0.8rem; font-weight: 600; color: var(--navy); }
+.emi-status-text { font-size: 0.68rem; color: var(--gray); margin-top: 1px; }
+.emi-amount { font-family: 'Baloo 2', cursive; font-size: 0.9rem; font-weight: 700; color: var(--navy); }
+
+/* LEARN */
+.reel-card { background: var(--navy); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; box-shadow: var(--shadow); }
+.reel-thumb { width: 100%; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
+.reel-thumb.r1 { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+.reel-thumb.r2 { background: linear-gradient(135deg, #2d1b00, #5a3500); }
+.reel-thumb.r3 { background: linear-gradient(135deg, #001a0d, #003d1a); }
+.reel-thumb.r4 { background: linear-gradient(135deg, #0d0d2b, #1a1a5c); }
+.play-btn { position: absolute; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+.reel-duration { position: absolute; bottom: 8px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 5px; }
+.reel-badge { position: absolute; top: 8px; left: 10px; background: var(--orange); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.reel-info { padding: 14px; }
+.reel-title { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.reel-desc { font-size: 0.75rem; color: rgba(255,255,255,0.55); line-height: 1.5; margin-bottom: 10px; }
+.reel-footer { display: flex; align-items: center; justify-content: space-between; }
+.reel-tag { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); font-size: 0.65rem; padding: 3px 10px; border-radius: 20px; }
+.reel-watch { background: var(--orange); color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Baloo 2', cursive; }
+.quiz-card { background: linear-gradient(135deg, var(--gold), #f59e0b); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.quiz-title { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+.quiz-sub { font-size: 0.78rem; color: rgba(0,0,0,0.55); margin-bottom: 12px; }
+.quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quiz-opt { background: rgba(255,255,255,0.7); border-radius: 10px; padding: 10px; text-align: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+.quiz-opt:hover { background: #fff; border-color: var(--navy); }
+.quiz-opt.correct { background: #DCFCE7; border-color: var(--green); color: var(--green); }
+.quiz-opt.wrong { background: #FEE2E2; border-color: var(--red); color: var(--red); }
+
+/* PROFILE */
+.profile-hero { background: linear-gradient(135deg, var(--navy) 0%, #1e293b 100%); border-radius: var(--radius); padding: 22px; margin-bottom: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 10px; border: 3px solid rgba(255,255,255,0.2); }
+.profile-name { font-family: 'Baloo 2', cursive; font-size: 1.3rem; font-weight: 800; color: #fff; }
+.profile-business { color: rgba(255,255,255,0.6); font-size: 0.82rem; margin-top: 2px; }
+.profile-badges { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+.badge { background: rgba(255,255,255,0.1); color: #fff; font-size: 0.68rem; padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+.badge.gold-badge { background: rgba(245,158,11,0.25); color: var(--gold); }
+.profile-menu { display: flex; flex-direction: column; gap: 6px; }
+.menu-row { background: var(--white); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: background 0.15s; }
+.menu-row:hover { background: #fafafa; }
+.menu-icon { font-size: 1.2rem; }
+.menu-text { flex: 1; font-size: 0.88rem; font-weight: 600; color: var(--navy); }
+.menu-sub { font-size: 0.72rem; color: var(--gray); margin-top: 1px; }
+.menu-arrow { color: var(--gray); font-size: 0.85rem; }
+.upi-synced { background: #DCFCE7; color: var(--green); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+
+/* MODALS */
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; animation: fadein 0.2s ease; }
+.modal-sheet { background: var(--white); border-radius: 24px 24px 0 0; width: 100%; padding: 20px; max-height: 85vh; overflow-y: auto; }
+.modal-handle { width: 40px; height: 4px; background: #D1D5DB; border-radius: 10px; margin: 0 auto 16px; }
+.modal-title { font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; color: var(--navy); margin-bottom: 18px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 0.78rem; font-weight: 600; color: var(--gray); margin-bottom: 5px; display: block; }
+.form-input { width: 100%; padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 0.9rem; font-family: 'Noto Sans', sans-serif; color: var(--navy); outline: none; transition: border-color 0.2s; }
+.form-input:focus { border-color: var(--orange); }
+.type-toggle { display: flex; gap: 8px; }
+.type-btn { flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #E5E7EB; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: none; font-family: 'Baloo 2', cursive; transition: all 0.2s; }
+.type-btn.sel-income { background: #DCFCE7; border-color: var(--green); color: var(--green); }
+.type-btn.sel-expense { background: #FEE2E2; border-color: var(--red); color: var(--red); }
+.submit-btn { width: 100%; background: var(--orange); color: #fff; border: none; padding: 14px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 6px; }
+.qr-box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 10px 0; }
+.qr-visual { width: 180px; height: 180px; border-radius: 12px; background: var(--white); border: 3px solid var(--navy); display: flex; align-items: center; justify-content: center; font-size: 8rem; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+.qr-label { font-size: 0.82rem; color: var(--gray); text-align: center; line-height: 1.5; }
+.qr-id { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; color: var(--navy); background: var(--gray-light); padding: 6px 18px; border-radius: 20px; }
+.upi-status { display: flex; flex-direction: column; gap: 10px; }
+.upi-item { background: var(--gray-light); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.upi-item-icon { font-size: 1.4rem; }
+.upi-item-info { flex: 1; }
+.upi-item-name { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+.upi-item-time { font-size: 0.7rem; color: var(--gray); }
+.upi-item-amount { font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; color: var(--green); }
+.loan-slider { width: 100%; accent-color: var(--blue); }
+.loan-preview { background: #EFF6FF; border-radius: 12px; padding: 14px; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lp-item .lp-val { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; color: var(--blue); }
+.lp-item .lp-lbl { font-size: 0.7rem; color: var(--gray); margin-top: 1px; }
+
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 25px; font-size: 0.82rem; font-weight: 600; z-index: 300; display: none; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+.toast.show { display: block; animation: toastin 0.3s ease; }
+@keyframes toastin { from{opacity:0;transform:translate(-50%,10px)} to{opacity:1;transform:translate(-50%,0)} }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-emoji">🛒</div>
+  <div class="splash-logo">Dukaan<span>Score</span></div>
+  <div class="splash-tag">Your Business. Your Credit.</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<nav>
+  <div class="nav-logo">Dukaan<span>Score</span></div>
+  <div class="nav-right">
+    <button class="nav-notif" onclick="showToast('🔔 3 new alerts')">🔔<span class="notif-dot"></span></button>
+    <div class="nav-avatar" onclick="switchPage('profile')">RK</div>
+  </div>
+</nav>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="switchPage('home')"><span>🏠</span> Home</button>
+  <button class="tab" onclick="switchPage('ledger')"><span>📒</span> Ledger</button>
+  <button class="tab" onclick="switchPage('loans')"><span>💰</span> Loans</button>
+  <button class="tab" onclick="switchPage('learn')"><span>🎓</span> Learn</button>
+  <button class="tab" onclick="switchPage('profile')"><span>👤</span> Profile</button>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero-card" style="margin-top:4px">
+    <div class="hero-greeting">Good morning,</div>
+    <div class="hero-name">Ramesh Khatri 👋</div>
+    <div class="score-row">
+      <div class="score-ring">
+        <div class="score-ring-inner">
+          <div class="score-num">652</div>
+          <div class="score-max">/900</div>
+        </div>
+      </div>
+      <div class="score-info">
+        <div class="score-label">Your Credit Score</div>
+        <div class="score-status">Good 🟢</div>
+        <div class="score-tip">Add 5 more entries this week to reach <strong style="color:#fff">Excellent</strong></div>
+      </div>
+    </div>
+    <div class="loan-eligibility">
+      <div>
+        <div class="loan-elig-label">Loan Eligibility (Live)</div>
+        <div class="loan-elig-amount">₹45,000</div>
+      </div>
+      <button class="loan-elig-btn" onclick="switchPage('loans')">Apply Now →</button>
+    </div>
+  </div>
+
+  <div class="quick-stats">
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-val">₹12,480</div>
+      <div class="stat-lbl">Sales Today</div>
+      <div class="stat-change up">▲ 18% vs yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-val">₹2,41,000</div>
+      <div class="stat-lbl">Monthly Revenue</div>
+      <div class="stat-change up">▲ 7% vs last month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💸</div>
+      <div class="stat-val">₹3,200</div>
+      <div class="stat-lbl">Expenses Today</div>
+      <div class="stat-change down">▼ 5% vs yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏦</div>
+      <div class="stat-val">₹8,000</div>
+      <div class="stat-lbl">EMI Due</div>
+      <div class="stat-lbl" style="color:var(--red);font-size:0.68rem;margin-top:4px">Due in 3 days</div>
+    </div>
+  </div>
+
+  <div class="section-title">Quick Actions</div>
+  <div class="action-grid">
+    <button class="action-btn" onclick="openModal('add-entry-modal')"><span class="a-icon">➕</span><span class="a-label">Add Sale</span></button>
+    <button class="action-btn" onclick="openModal('qr-modal')"><span class="a-icon">📲</span><span class="a-label">QR Dashboard</span></button>
+    <button class="action-btn" onclick="openModal('upi-modal')"><span class="a-icon">🔄</span><span class="a-label">Sync UPI</span></button>
+    <button class="action-btn" onclick="switchPage('loans')"><span class="a-icon">💰</span><span class="a-label">Get Loan</span></button>
+  </div>
+
+  <div class="section-title">Recent Transactions</div>
+  <div class="txn-list">
+    <div class="txn-item">
+      <div class="txn-icon income">📱</div>
+      <div class="txn-info"><div class="txn-name">UPI — PhonePe Sale</div><div class="txn-time">Today, 11:32 AM • Auto-synced</div></div>
+      <div class="txn-amount income">+₹340</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon income">💵</div>
+      <div class="txn-info"><div class="txn-name">Cash Sale — Vegetables</div><div class="txn-time">Today, 10:15 AM</div></div>
+      <div class="txn-amount income">+₹820</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon expense">🛒</div>
+      <div class="txn-info"><div class="txn-name">Wholesale Purchase</div><div class="txn-time">Today, 7:00 AM</div></div>
+      <div class="txn-amount expense">-₹2,400</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon loan">🏦</div>
+      <div class="txn-info"><div class="txn-name">EMI Payment</div><div class="txn-time">Yesterday, 6:00 PM</div></div>
+      <div class="txn-amount loan">-₹8,000</div>
+    </div>
+  </div>
+</div>
+
+<!-- LEDGER -->
+<div class="page" id="page-ledger">
+  <div class="ledger-header" style="margin-top:4px">
+    <div class="ledger-top">
+      <div class="ledger-month">📒 May 2026</div>
+      <button class="ledger-toggle">Monthly ▾</button>
+    </div>
+    <div class="ledger-totals">
+      <div class="ledger-tot"><div class="ledger-tot-val" style="color:#86efac">₹2,41,000</div><div class="ledger-tot-lbl">Total Sales</div></div>
+      <div class="ledger-tot"><div class="ledger-tot-val" style="color:#fca5a5">₹88,500</div><div class="ledger-tot-lbl">Expenses</div></div>
+      <div class="ledger-tot"><div class="ledger-tot-val" style="color:#fde68a">₹1,52,500</div><div class="ledger-tot-lbl">Net Profit</div></div>
+    </div>
+  </div>
+  <button class="add-entry-btn" onclick="openModal('add-entry-modal')">➕ Add Entry</button>
+  <div class="ledger-day">
+    <div class="day-label">Today — 22 May</div>
+    <div class="ledger-row"><div class="ledger-cat cat-sales">🥦</div><div class="ledger-desc"><div class="ledger-desc-name">Vegetable Sales</div><div class="ledger-desc-sub">UPI • Auto-synced from PhonePe</div></div><div class="ledger-amt in">+₹4,200</div></div>
+    <div class="ledger-row"><div class="ledger-cat cat-expense">🛒</div><div class="ledger-desc"><div class="ledger-desc-name">Wholesale Market</div><div class="ledger-desc-sub">Cash expense</div></div><div class="ledger-amt out">-₹2,400</div></div>
+    <div class="ledger-row"><div class="ledger-cat cat-sales">💵</div><div class="ledger-desc"><div class="ledger-desc-name">Evening Sales — Cash</div><div class="ledger-desc-sub">Manual entry</div></div><div class="ledger-amt in">+₹3,800</div></div>
+  </div>
+  <div class="ledger-day">
+    <div class="day-label">Yesterday — 21 May</div>
+    <div class="ledger-row"><div class="ledger-cat cat-sales">📱</div><div class="ledger-desc"><div class="ledger-desc-name">UPI Collections</div><div class="ledger-desc-sub">Auto-synced • 8 transactions</div></div><div class="ledger-amt in">+₹6,100</div></div>
+    <div class="ledger-row"><div class="ledger-cat cat-expense">🚛</div><div class="ledger-desc"><div class="ledger-desc-name">Transport</div><div class="ledger-desc-sub">Cash expense</div></div><div class="ledger-amt out">-₹350</div></div>
+    <div class="ledger-row"><div class="ledger-cat cat-other">🏦</div><div class="ledger-desc"><div class="ledger-desc-name">EMI Payment</div><div class="ledger-desc-sub">Loan #DSK-001</div></div><div class="ledger-amt out">-₹8,000</div></div>
+  </div>
+  <div class="ledger-day">
+    <div class="day-label">20 May</div>
+    <div class="ledger-row"><div class="ledger-cat cat-sales">🥦</div><div class="ledger-desc"><div class="ledger-desc-name">Morning Sales</div><div class="ledger-desc-sub">UPI + Cash</div></div><div class="ledger-amt in">+₹5,450</div></div>
+    <div class="ledger-row"><div class="ledger-cat cat-expense">🌿</div><div class="ledger-desc"><div class="ledger-desc-name">Stock Replenishment</div><div class="ledger-desc-sub">Cash expense</div></div><div class="ledger-amt out">-₹1,800</div></div>
+  </div>
+</div>
+
+<!-- LOANS -->
+<div class="page" id="page-loans">
+  <div class="loan-hero" style="margin-top:4px">
+    <div class="loan-hero-top">
+      <div class="loan-hero-title">💰 Loan Eligibility</div>
+      <div class="live-badge"><span class="live-dot"></span> Live</div>
+    </div>
+    <div class="loan-amount-big">₹45,000</div>
+    <div class="loan-amount-sub">Based on 47 days of transaction history</div>
+    <div class="loan-bar-bg"><div class="loan-bar-fill"></div></div>
+    <div class="loan-bar-labels"><span>₹0</span><span>Current: ₹45K</span><span>₹70,000</span></div>
+  </div>
+  <div class="loan-cards-row">
+    <div class="loan-mini-card active-loan">
+      <div class="loan-mini-title">Active Loan</div>
+      <div class="loan-mini-val">₹20,000</div>
+      <div class="loan-mini-sub">₹8,000 remaining</div>
+      <div class="loan-mini-status status-active">On Track ✓</div>
+    </div>
+    <div class="loan-mini-card completed">
+      <div class="loan-mini-title">Last Loan</div>
+      <div class="loan-mini-val">₹10,000</div>
+      <div class="loan-mini-sub">Repaid in 60 days</div>
+      <div class="loan-mini-status status-done">Completed ✓</div>
+    </div>
+  </div>
+  <button class="apply-loan-btn" onclick="openModal('loan-apply-modal')">Apply for New Loan →</button>
+  <div class="section-title">EMI Schedule — Current Loan</div>
+  <div class="emi-timeline">
+    <div class="emi-row"><div class="emi-num emi-paid">✓</div><div class="emi-info"><div class="emi-date">1 May 2026</div><div class="emi-status-text">Paid on time 🎉</div></div><div class="emi-amount">₹4,000</div></div>
+    <div class="emi-row"><div class="emi-num emi-paid">✓</div><div class="emi-info"><div class="emi-date">15 May 2026</div><div class="emi-status-text">Paid on time 🎉</div></div><div class="emi-amount">₹4,000</div></div>
+    <div class="emi-row"><div class="emi-num emi-due">!</div><div class="emi-info"><div class="emi-date">25 May 2026</div><div class="emi-status-text" style="color:var(--red)">Due in 3 days</div></div><div class="emi-amount" style="color:var(--red)">₹4,000</div></div>
+    <div class="emi-row"><div class="emi-num emi-upcoming">4</div><div class="emi-info"><div class="emi-date">1 Jun 2026</div><div class="emi-status-text">Upcoming</div></div><div class="emi-amount">₹4,000</div></div>
+    <div class="emi-row"><div class="emi-num emi-upcoming">5</div><div class="emi-info"><div class="emi-date">15 Jun 2026</div><div class="emi-status-text">Upcoming</div></div><div class="emi-amount">₹4,000</div></div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div class="page" id="page-learn">
+  <div style="margin-top:4px">
+    <div class="quiz-card">
+      <div class="quiz-title">🧠 Daily Quiz — Earn 10 Points!</div>
+      <div class="quiz-sub">What improves your credit score the most?</div>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="answerQuiz(this,'wrong')">Taking more loans</div>
+        <div class="quiz-opt" onclick="answerQuiz(this,'correct')">Regular sales entries</div>
+        <div class="quiz-opt" onclick="answerQuiz(this,'wrong')">Avoiding UPI</div>
+        <div class="quiz-opt" onclick="answerQuiz(this,'wrong')">Not repaying EMI</div>
+      </div>
+    </div>
+    <div class="section-title">📹 Financial Reels</div>
+    <div class="reel-card">
+      <div class="reel-thumb r1"><div class="reel-badge">NEW</div>📊<div class="play-btn" onclick="showToast('▶ Playing reel...')">▶</div><div class="reel-duration">2:15</div></div>
+      <div class="reel-info">
+        <div class="reel-title">What is a Credit Score? 🎯</div>
+        <div class="reel-desc">Learn how your daily sales data builds your credit profile and unlocks bigger loans over time.</div>
+        <div class="reel-footer"><div class="reel-tag">🔰 Beginner</div><button class="reel-watch" onclick="showToast('▶ Opening reel...')">Watch Now</button></div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-thumb r2">🏦<div class="play-btn" onclick="showToast('▶ Playing reel...')">▶</div><div class="reel-duration">1:48</div></div>
+      <div class="reel-info">
+        <div class="reel-title">Saving ₹50 Daily Changes Everything 💡</div>
+        <div class="reel-desc">A small daily saving habit can help you avoid emergency loans and build a safety net for your family.</div>
+        <div class="reel-footer"><div class="reel-tag">💡 Tips</div><button class="reel-watch" onclick="showToast('▶ Opening reel...')">Watch Now</button></div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-thumb r3">📱<div class="play-btn" onclick="showToast('▶ Playing reel...')">▶</div><div class="reel-duration">3:02</div></div>
+      <div class="reel-info">
+        <div class="reel-title">Use UPI to Auto-Track Your Sales 📲</div>
+        <div class="reel-desc">Every UPI payment auto-adds to your ledger — no manual entry needed. Sync once, track forever.</div>
+        <div class="reel-footer"><div class="reel-tag">⚡ How-To</div><button class="reel-watch" onclick="showToast('▶ Opening reel...')">Watch Now</button></div>
+      </div>
+    </div>
+    <div class="reel-card">
+      <div class="reel-thumb r4">📜<div class="play-btn" onclick="showToast('▶ Playing reel...')">▶</div><div class="reel-duration">2:30</div></div>
+      <div class="reel-info">
+        <div class="reel-title">Why Formal Loans Beat Moneylenders 🏦</div>
+        <div class="reel-desc">Informal lenders charge 3–5x more interest. See how a credit score gets you fair, low-interest loans.</div>
+        <div class="reel-footer"><div class="reel-tag">🔥 Popular</div><button class="reel-watch" onclick="showToast('▶ Opening reel...')">Watch Now</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="profile-hero" style="margin-top:4px">
+    <div class="profile-avatar">🧑</div>
+    <div class="profile-name">Ramesh Khatri</div>
+    <div class="profile-business">🥦 Vegetable Vendor • Sector 14, Gurugram</div>
+    <div class="profile-badges">
+      <div class="badge gold-badge">⭐ Good Score</div>
+      <div class="badge">✅ 47 Days Active</div>
+      <div class="badge">📱 UPI Linked</div>
+      <div class="badge">🎓 2 Reels Watched</div>
+    </div>
+  </div>
+  <div class="profile-menu">
+    <div class="menu-row" onclick="openModal('upi-modal')"><div class="menu-icon">📱</div><div class="menu-text">UPI Auto-Sync<div class="menu-sub">PhonePe linked • Last synced 11:32 AM</div></div><div class="upi-synced">Synced</div></div>
+    <div class="menu-row" onclick="openModal('qr-modal')"><div class="menu-icon">📲</div><div class="menu-text">QR Code Dashboard<div class="menu-sub">Share your financial health card</div></div><div class="menu-arrow">›</div></div>
+    <div class="menu-row" onclick="showToast('📄 Generating report...')"><div class="menu-icon">📄</div><div class="menu-text">Download Statement<div class="menu-sub">PDF / Excel export</div></div><div class="menu-arrow">›</div></div>
+    <div class="menu-row" onclick="showToast('🌐 Language changed to Hindi')"><div class="menu-icon">🌐</div><div class="menu-text">Language<div class="menu-sub">Currently: English</div></div><div class="menu-arrow">›</div></div>
+    <div class="menu-row" onclick="showToast('🔔 Notification settings opened')"><div class="menu-icon">🔔</div><div class="menu-text">Notifications & Reminders<div class="menu-sub">EMI reminders, UPI alerts, tips</div></div><div class="menu-arrow">›</div></div>
+    <div class="menu-row" onclick="showToast('🆘 Support chat opened')"><div class="menu-icon">🆘</div><div class="menu-text">Help & Support<div class="menu-sub">Chat with us in Hindi / English</div></div><div class="menu-arrow">›</div></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-item active" id="bnav-home" onclick="switchPage('home')"><span class="icon">🏠</span>Home</button>
+  <button class="bnav-item" id="bnav-ledger" onclick="switchPage('ledger')"><span class="icon">📒</span>Ledger</button>
+  <div class="bnav-fab"><div class="fab-btn" onclick="openModal('add-entry-modal')">➕</div><div class="fab-label">Add</div></div>
+  <button class="bnav-item" id="bnav-loans" onclick="switchPage('loans')"><span class="icon">💰</span>Loans</button>
+  <button class="bnav-item" id="bnav-learn" onclick="switchPage('learn')"><span class="icon">🎓</span>Learn</button>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="add-entry-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ Add Entry</div>
+    <div class="form-group"><div class="type-toggle"><button class="type-btn sel-income" id="type-income" onclick="selectType('income')">📈 Income</button><button class="type-btn" id="type-expense" onclick="selectType('expense')">📉 Expense</button></div></div>
+    <div class="form-group"><label class="form-label">Amount (₹)</label><input class="form-input" type="number" placeholder="e.g. 500" id="entry-amount"></div>
+    <div class="form-group"><label class="form-label">Category</label><select class="form-input"><option>Vegetable Sales</option><option>UPI Collection</option><option>Cash Sales</option><option>Wholesale Purchase</option><option>Transport</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Note (optional)</label><input class="form-input" type="text" placeholder="e.g. Morning batch"></div>
+    <button class="submit-btn" onclick="submitEntry()">Save Entry ✓</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📲 QR Dashboard</div>
+    <div class="qr-box">
+      <div class="qr-visual">⬛</div>
+      <div class="qr-id">DSK-RK-4721</div>
+      <div class="qr-label">Share this QR with banks or lenders<br>to instantly show your financial health card.</div>
+      <button class="submit-btn" style="width:auto;padding:10px 28px" onclick="showToast('📤 QR shared!')">Share QR</button>
+    </div>
+    <div style="margin-top:16px;background:var(--gray-light);border-radius:12px;padding:14px">
+      <div style="font-size:0.8rem;font-weight:700;color:var(--navy);margin-bottom:10px">Your Health Card</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="font-size:0.75rem;color:var(--gray)">Credit Score<br><strong style="color:var(--navy);font-family:'Baloo 2',cursive;font-size:1rem">652 / 900</strong></div>
+        <div style="font-size:0.75rem;color:var(--gray)">Loan Eligible<br><strong style="color:var(--green);font-family:'Baloo 2',cursive;font-size:1rem">₹45,000</strong></div>
+        <div style="font-size:0.75rem;color:var(--gray)">Avg Monthly Sales<br><strong style="color:var(--navy);font-family:'Baloo 2',cursive;font-size:1rem">₹2,41,000</strong></div>
+        <div style="font-size:0.75rem;color:var(--gray)">Active Since<br><strong style="color:var(--navy);font-family:'Baloo 2',cursive;font-size:1rem">Mar 2026</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="upi-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔄 UPI Auto-Sync</div>
+    <div style="background:#DCFCE7;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.3rem">✅</span>
+      <div style="font-size:0.82rem;color:var(--green);font-weight:600">PhonePe linked • Syncing automatically</div>
+    </div>
+    <div style="font-size:0.78rem;color:var(--gray);margin-bottom:12px">Today's UPI transactions auto-added to ledger:</div>
+    <div class="upi-status">
+      <div class="upi-item"><div class="upi-item-icon">📱</div><div class="upi-item-info"><div class="upi-item-name">Customer — UPI Sale</div><div class="upi-item-time">11:32 AM</div></div><div class="upi-item-amount">+₹340</div></div>
+      <div class="upi-item"><div class="upi-item-icon">📱</div><div class="upi-item-info"><div class="upi-item-name">Customer — UPI Sale</div><div class="upi-item-time">10:15 AM</div></div><div class="upi-item-amount">+₹180</div></div>
+      <div class="upi-item"><div class="upi-item-icon">📱</div><div class="upi-item-info"><div class="upi-item-name">Customer — UPI Sale</div><div class="upi-item-time">9:40 AM</div></div><div class="upi-item-amount">+₹560</div></div>
+    </div>
+    <button class="submit-btn" style="margin-top:14px" onclick="closeAllModals();showToast('✅ Synced!')">Done</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loan-apply-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 Apply for Loan</div>
+    <div class="form-group">
+      <label class="form-label">Loan Amount</label>
+      <input class="loan-slider" type="range" min="5000" max="45000" step="1000" value="20000" id="loan-slider" oninput="updateLoanPreview()">
+      <div style="text-align:center;font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:800;color:var(--blue);margin-top:4px" id="loan-slider-val">₹20,000</div>
+    </div>
+    <div class="form-group"><label class="form-label">Tenure</label><select class="form-input" id="loan-tenure" onchange="updateLoanPreview()"><option value="30">30 days</option><option value="60" selected>60 days</option><option value="90">90 days</option></select></div>
+    <div class="loan-preview">
+      <div class="lp-item"><div class="lp-val" id="lp-emi">₹3,500</div><div class="lp-lbl">Per EMI (biweekly)</div></div>
+      <div class="lp-item"><div class="lp-val" id="lp-interest">₹600</div><div class="lp-lbl">Total Interest (3%)</div></div>
+      <div class="lp-item"><div class="lp-val" id="lp-total">₹20,600</div><div class="lp-lbl">Total Repayable</div></div>
+      <div class="lp-item"><div class="lp-val" style="color:var(--green)">✅ Eligible</div><div class="lp-lbl">Based on score 652</div></div>
+    </div>
+    <button class="submit-btn" style="background:var(--blue);box-shadow:0 4px 16px rgba(29,78,216,0.3);margin-top:14px" onclick="closeAllModals();showToast('✅ Application submitted!')">Submit Application →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+setTimeout(() => document.getElementById('splash').classList.add('hide'), 2400);
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name === 'home' ? 'home' : name)) t.classList.add('active');
+  });
+  const bn = document.getElementById('bnav-' + name);
+  if (bn) bn.classList.add('active');
+}
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeAllModals(); }));
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function selectType(type) {
+  document.getElementById('type-income').className = 'type-btn' + (type==='income'?' sel-income':'');
+  document.getElementById('type-expense').className = 'type-btn' + (type==='expense'?' sel-expense':'');
+}
+function submitEntry() {
+  const amt = document.getElementById('entry-amount').value;
+  if (!amt) { showToast('⚠️ Enter an amount'); return; }
+  closeAllModals(); showToast('✅ Entry saved — Score improving!');
+}
+let quizAnswered = false;
+function answerQuiz(el, result) {
+  if (quizAnswered) return; quizAnswered = true;
+  el.classList.add(result);
+  showToast(result === 'correct' ? '🎉 Correct! +10 points!' : '❌ Wrong! Answer: Regular sales entries');
+}
+function updateLoanPreview() {
+  const amt = parseInt(document.getElementById('loan-slider').value);
+  const days = parseInt(document.getElementById('loan-tenure').value);
+  document.getElementById('loan-slider-val').textContent = '₹' + amt.toLocaleString('en-IN');
+  const interest = Math.round(amt * 0.03);
+  const total = amt + interest;
+  const installments = days === 30 ? 2 : days === 60 ? 4 : 6;
+  const emi = Math.round(total / installments);
+  document.getElementById('lp-emi').textContent = '₹' + emi.toLocaleString('en-IN');
+  document.getElementById('lp-interest').textContent = '₹' + interest.toLocaleString('en-IN');
+  document.getElementById('lp-total').textContent = '₹' + total.toLocaleString('en-IN');
+}
+</script>
+</body>
+</html>
